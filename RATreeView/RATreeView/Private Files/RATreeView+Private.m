@@ -75,7 +75,6 @@
 
 - (void)collapseCellForTreeNode:(RATreeNode *)treeNode collapseChildren:(BOOL)collapseChildren withRowAnimation:(RATreeViewRowAnimation)rowAnimation
 {
-  [self.tableView beginUpdates];
   [self.batchChanges beginUpdates];
   
   NSInteger index = [self.treeNodeCollectionController lastVisibleDescendantIndexForItem:treeNode.item];
@@ -84,12 +83,21 @@
   [self.batchChanges collapseItemWithBlock:^{
     UITableViewRowAnimation tableViewRowAnimation = [RATreeView tableViewRowAnimationForTreeViewRowAnimation:rowAnimation];
     [weakSelf.treeNodeCollectionController collapseRowForItem:treeNode.item collapseChildren:collapseChildren updates:^(NSIndexSet *deletions) {
-      [weakSelf.tableView deleteRowsAtIndexPaths:IndexesToIndexPaths(deletions) withRowAnimation:tableViewRowAnimation];
+        
+        //修复数据量过大UI慢
+        if (deletions.count > 50) {
+            [weakSelf.tableView reloadData];
+
+        } else {
+            [self.tableView beginUpdates];
+            [weakSelf.tableView deleteRowsAtIndexPaths:IndexesToIndexPaths(deletions) withRowAnimation:tableViewRowAnimation];
+            [self.tableView endUpdates];
+        }
+
     }];
   } lastIndex:index];
   
   [self.batchChanges endUpdates];
-  [self.tableView endUpdates];
 }
 
 - (void)expandCellForTreeNode:(RATreeNode *)treeNode

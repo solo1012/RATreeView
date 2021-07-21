@@ -224,12 +224,18 @@
     RATreeNodeItem *lazyItem = [[RATreeNodeItem alloc] initWithParent:parentController.treeNode.item index:idx];
     lazyItem.dataSource = self;
     
-    
-    for (RATreeNodeController *controller in parentController.childControllers) {
+      //修复数据量过大时UI慢
+    if (idx < parentController.childControllers.count) {
+      RATreeNodeController *controller = parentController.childControllers[idx];
       if ([controller.treeNode.item isEqual:lazyItem.item]) {
         oldControllerForCurrentIndex = controller;
       }
     }
+//    for (RATreeNodeController *controller in parentController.childControllers) {
+//      if ([controller.treeNode.item isEqual:lazyItem.item]) {
+//        oldControllerForCurrentIndex = controller;
+//      }
+//    }
     if (oldControllerForCurrentIndex != nil) {
       controller = oldControllerForCurrentIndex;
       
